@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://simplewebrtc.com/latest-v2.js"></script>
+    <script src="jquery-3.1.1.min.js"></script>
+</head>
+<body>
+<video height="300" id="localVideo"></video>
+<div id="remotesVideos"></div>
+<input type="text" id="username">
+<button id="submit">Submit</button>
+<script>
+
+    var allPeers = [];
+    var peerInfo = {};
+
+    $('#submit').click(function(){
+
+        var username = $('#username').val();
+
+        var webrtc = new SimpleWebRTC({
+            // the id/element dom element that will hold "our" video
+            localVideoEl: 'localVideo',
+            // the id/element dom element that will hold remote videos
+            remoteVideosEl: 'remotesVideos',
+            // immediately ask for camera access
+            autoRequestMedia: true,
+
+            nick: username
+
+        });
+
+        peerInfo.username = "Chintan";
+        webrtc.joinRoom('idle');
+        //console.log(callerInfo);
+        webrtc.sendDirectlyToAll('text', 'newPeer', peerInfo.username);
+
+        webrtc.on('connectionReady', (sessionId) => {
+            peerInfo.sessionId = sessionId;
+    });
+        /*
+         webrtc.on('channelMessage', (peer, label, data) => {
+         if(label == 'text' && data.type == 'newPeer')
+         console.log(data.payload);
+         });
+         */
+        webrtc.on('createdPeer', function(peer) {
+            console.log(peer);
+        });
+
+    });
+
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "udaan-intercom",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Team-Udaan/udaan-intercom.git"
+  },
+  "author": "Maunil Swadas, Chintan Acharya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Team-Udaan/udaan-intercom/issues"
+  },
+  "homepage": "https://github.com/Team-Udaan/udaan-intercom#readme"
+}
