@@ -3,17 +3,17 @@
 <head>
     <script src="node_modules/simplewebrtc/latest-v2.js"></script>
     <script src="jquery-3.1.1.min.js"></script>
+    <script src="node_modules/page/page.js"></script>
     <script src="handlebars.runtime.min.js"></script>
-    <script src="calling-buttons-template.min.js"></script>
+    <script src="calling-buttons.min.js"></script>
 </head>
 <body>
 
 
 <input type="text" id="username">
 <button id="submit">Submit</button>
-<button id="submit1">Submit</button>
-<button id="getpeers">getpeers</button>
 <button id="leave">Leave</button>
+<button id="page">page</button>
 <video height="300" id="localVideo"></video>
 <div id="remotesVideos"></div>
 
@@ -22,93 +22,44 @@
 <script>
 
 
-    var allPeers = [];
+
+    var allPeers = {};
     var peerInfo = {};
     var webrtc = null;
 
+    $('#page').click(function () {
+        page('/active')
+    });
     $('#submit').click(function () {
 
-        var peerListTemplate = Handlebars.templates['calling-buttons'];
 
         var username = $('#username').val();
         peerInfo.username = username;
         webrtc = new SimpleWebRTC({
 
 //            url: 'https://localhost:8888',
-
-            localVideoEl: 'localVideo',
-
-            remoteVideosEl: 'remotesVideos',
-
             autoRequestMedia: true,
             nick: username
         });
 
-
         webrtc.on('readyToCall', function () {
-            webrtc.joinRoom('idle');
+                webrtc.joinRoom('idle');
         });
-        webrtc.on('joinedRoom',function () {
-            allPeers = [];
-            webrtc.on('createdPeer', function (peer) {
-               allPeers.push(peer.nick);
+
+        webrtc.on('videoAdded', function (videoEl,peer) {
+            allPeers=webrtc.getPeers().map(function (peer) {
+                return {nick:peer.nick,id:peer.id}
             });
-            webrtc.on('remove', function (peer) {
-                allPeers.splice(allPeers.indexOf(peer.nick), 1);
-            });
-            webrtc.sendToAll('personJoined', peerInfo);
-        });
-//        webrtc.connection.on('message',function (data) {
-//            console.log(data);
-//        });
-
-        webrtc.on('connectionReady', function (sessionId) {
-            peerInfo.sessionId = sessionId;
-        });
-
-        $('#submit1').click(function () {
-            webrtc.sendToAll('setDisplayName', peerInfo);
-        });
-
-        $('#getpeers').click(function () {
-            allPeers = webrtc.getPeers().map(function (obj) {
-                return {nick: obj.nick, id: obj.id};
-            });
-//            console.log(allPeers);
-//            console.log(webrtc.getPeers());
-        });
-
-        webrtc.connection.on('message', function (data) {
-
-            if (data.type == 'setDisplayName') {
-//                var name = data;
-                console.log(data.payload);
-            }
-
-            if (data.type == 'personJoined') {
-                console.log('JOINED');
-                allPeers.push(data.payload);
-                console.log(allPeers);
-//                console.log("left");
-//                console.log(data.payload);
-            }
-
+            var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers':JSON.parse(JSON.stringify(allPeers))});
+            $('#peers').html(peerListTemplate);
         });
 
         webrtc.connection.on('remove', function(obj) {
-            console.log('LEFT');
-
-            allPeers = allPeers.filter(function(peer) {
-                return peer.sessionId !== obj.id;
+            allPeers=webrtc.getPeers().map(function (peer) {
+                return {nick:peer.nick,id:peer.id}
             });
-
-            console.log(allPeers);
-        });
-
-        webrtc.on('createdPeer', function (peer) {
-//            console.log("Joined:");
-//            console.log(peer.id + " " + peer.nick);
-//            allPeers.push({nick: peer.nick});
+            var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers':JSON.parse(JSON.stringify(allPeers))});
+            $('#peers').html(peerListTemplate);
         });
 
         $('#leave').click(function () {
@@ -116,50 +67,17 @@
             webrtc.leaveRoom();
         });
 
+
     });
 
     $(window).on('unload', (function () {
         webrtc.leaveRoom();
     }));
 
-
-    /*NEW
-
-     var allPeers = [];
-     var peerInfo = {};
-
-     var webrtc = null;
-
-     $('#submit').click(function () {
-     var username = $('#username').val();
-     webrtc = new SimpleWebRTC({
-     // the id/element dom element that will hold "our" video
-     localVideoEl: 'localVideo',
-     // the id/element dom element that will hold remote videos
-     remoteVideosEl: 'remotesVideos',
-     // immediately ask for camera access
-     autoRequestMedia: true,
-     nick: username
-     });
-     webrtc.joinRoom('idle');
-     $('#submit1').click(function () {
-     webrtc.sendToAll('setDisplayName', {name: $('#username').val(), nickname: 'Sasuke'});
-     });
-     $('#getpeers').click(function () {
-     console.log(webrtc.getPeers());
-     });
-     webrtc.connection.on('message', function (data) {
-     //            if (data.type == 'setDisplayName') {
-     //            var name = data;
-     console.log(data);
-     //            }
-     });
-     });
-
-     */
-
+    $('.call').click(function (event) {
+        console.log("maunil");
+        event.preventDefault();
+    });
 </script>
-
-
 </body>
 </html>
