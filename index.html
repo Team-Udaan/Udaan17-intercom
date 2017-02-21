@@ -13,6 +13,7 @@
 <button id="submit">Submit</button>
 <button id="submit1">Submit</button>
 <button id="getpeers">getpeers</button>
+<button id="leave">Leave</button>
 <video height="300" id="localVideo"></video>
 <div id="remotesVideos"></div>
 
@@ -20,42 +21,144 @@
 
 <script>
 
+
     var allPeers = [];
     var peerInfo = {};
+    var webrtc = null;
 
+    $('#submit').click(function () {
 
-    $('#submit').click(function(){
+        var peerListTemplate = Handlebars.templates['calling-buttons'];
 
         var username = $('#username').val();
-
+        peerInfo.username = username;
         webrtc = new SimpleWebRTC({
-            // the id/element dom element that will hold "our" video
+
+//            url: 'https://localhost:8888',
+
             localVideoEl: 'localVideo',
-            // the id/element dom element that will hold remote videos
+
             remoteVideosEl: 'remotesVideos',
-            // immediately ask for camera access
+
             autoRequestMedia: true,
-            nick:username
+            nick: username
         });
-        webrtc.joinRoom('idle');
 
 
-        $('#submit1').click(function(){
-            webrtc.sendToAll('setDisplayName',{name: $('#username').val(),nickname:'Sasuke'});
+        webrtc.on('readyToCall', function () {
+            webrtc.joinRoom('idle');
         });
-        $('getpeers').click(function(){
-            console.log(webrtc.getPeers());
+        webrtc.on('joinedRoom',function () {
+            allPeers = [];
+            webrtc.on('createdPeer', function (peer) {
+               allPeers.push(peer.nick);
+            });
+            webrtc.on('remove', function (peer) {
+                allPeers.splice(allPeers.indexOf(peer.nick), 1);
+            });
+            webrtc.sendToAll('personJoined', peerInfo);
         });
-        webrtc.on('message', function (data) {
+//        webrtc.connection.on('message',function (data) {
+//            console.log(data);
+//        });
+
+        webrtc.on('connectionReady', function (sessionId) {
+            peerInfo.sessionId = sessionId;
+        });
+
+        $('#submit1').click(function () {
+            webrtc.sendToAll('setDisplayName', peerInfo);
+        });
+
+        $('#getpeers').click(function () {
+            allPeers = webrtc.getPeers().map(function (obj) {
+                return {nick: obj.nick, id: obj.id};
+            });
+//            console.log(allPeers);
+//            console.log(webrtc.getPeers());
+        });
+
+        webrtc.connection.on('message', function (data) {
+
             if (data.type == 'setDisplayName') {
-//            var name = data;
+//                var name = data;
                 console.log(data.payload);
             }
+
+            if (data.type == 'personJoined') {
+                console.log('JOINED');
+                allPeers.push(data.payload);
+                console.log(allPeers);
+//                console.log("left");
+//                console.log(data.payload);
+            }
+
         });
+
+        webrtc.connection.on('remove', function(obj) {
+            console.log('LEFT');
+
+            allPeers = allPeers.filter(function(peer) {
+                return peer.sessionId !== obj.id;
+            });
+
+            console.log(allPeers);
+        });
+
+        webrtc.on('createdPeer', function (peer) {
+//            console.log("Joined:");
+//            console.log(peer.id + " " + peer.nick);
+//            allPeers.push({nick: peer.nick});
+        });
+
+        $('#leave').click(function () {
+            webrtc.sendToAll('left', peerInfo);
+            webrtc.leaveRoom();
+        });
+
     });
 
-</script>
+    $(window).on('unload', (function () {
+        webrtc.leaveRoom();
+    }));
 
+
+    /*NEW
+
+     var allPeers = [];
+     var peerInfo = {};
+
+     var webrtc = null;
+
+     $('#submit').click(function () {
+     var username = $('#username').val();
+     webrtc = new SimpleWebRTC({
+     // the id/element dom element that will hold "our" video
+     localVideoEl: 'localVideo',
+     // the id/element dom element that will hold remote videos
+     remoteVideosEl: 'remotesVideos',
+     // immediately ask for camera access
+     autoRequestMedia: true,
+     nick: username
+     });
+     webrtc.joinRoom('idle');
+     $('#submit1').click(function () {
+     webrtc.sendToAll('setDisplayName', {name: $('#username').val(), nickname: 'Sasuke'});
+     });
+     $('#getpeers').click(function () {
+     console.log(webrtc.getPeers());
+     });
+     webrtc.connection.on('message', function (data) {
+     //            if (data.type == 'setDisplayName') {
+     //            var name = data;
+     console.log(data);
+     //            }
+     });
+     });
+
+     */
+
+</script>
 
 
 </body>

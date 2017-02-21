@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/Team-Udaan/udaan-intercom/issues"
   },
-  "homepage": "https://github.com/Team-Udaan/udaan-intercom#readme"
+  "homepage": "https://github.com/Team-Udaan/udaan-intercom#readme",
+  "dependencies": {
+    "signal-master": "^1.0.1",
+    "simplewebrtc": "^2.2.3"
+  }
 }
