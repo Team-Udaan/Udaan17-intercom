@@ -54,6 +54,7 @@
             });
             var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers':JSON.parse(JSON.stringify(allPeers))});
             $('#peers').html(peerListTemplate);
+            register();
         });
 
         webrtc.connection.on('remove', function(obj) {
@@ -62,6 +63,7 @@
             });
             var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers':JSON.parse(JSON.stringify(allPeers))});
             $('#peers').html(peerListTemplate);
+            register();
         });
 
         $('#leave').click(function () {
@@ -69,17 +71,26 @@
             webrtc.leaveRoom();
         });
 
+        function register() {
+            $('.call').click(function () {
+                console.log($(this).data('session'));
+                webrtc.sendToAll('calling',{'receiver':$(this).data('session'),'sender':webrtc.connection.connection.id})
+            });
+        }
+
+        webrtc.connection.on('message', function (data) {
+            if (data.type == 'calling') {
+                if(data.payload.receiver==webrtc.connection.connection.id){
+                    console.log('calling');
+                }
+            }
+        });
 
     });
 
     $(window).on('unload', (function () {
         webrtc.leaveRoom();
     }));
-    $(window).ready(function () {
-        $('.call').click(function (event) {
-            console.log("maunil");
-        });
-    });
 
 </script>
 </body>
