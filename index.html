@@ -44,6 +44,8 @@
 
         webrtc.on('readyToCall', function () {
                 webrtc.joinRoom('idle');
+                webrtc.pauseVideo();
+                webrtc.mute();
         });
 
         webrtc.on('videoAdded', function (videoEl,peer) {
@@ -73,11 +75,12 @@
     $(window).on('unload', (function () {
         webrtc.leaveRoom();
     }));
-
-    $('.call').click(function (event) {
-        console.log("maunil");
-        event.preventDefault();
+    $(window).ready(function () {
+        $('.call').click(function (event) {
+            console.log("maunil");
+        });
     });
+
 </script>
 </body>
 </html>
