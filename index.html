@@ -9,11 +9,12 @@
 <body>
 
 
-<video height="300" id="localVideo"></video>
-<div id="remotesVideos"></div>
 <input type="text" id="username">
 <button id="submit">Submit</button>
 <button id="submit1">Submit</button>
+<button id="getpeers">getpeers</button>
+<video height="300" id="localVideo"></video>
+<div id="remotesVideos"></div>
 
 <div id="peers"></div>
 
@@ -22,31 +23,35 @@
     var allPeers = [];
     var peerInfo = {};
 
-    webrtc = new SimpleWebRTC({
-        // the id/element dom element that will hold "our" video
-        localVideoEl: 'localVideo',
-        // the id/element dom element that will hold remote videos
-        remoteVideosEl: 'remotesVideos',
-        // immediately ask for camera access
-        autoRequestMedia: true
-
-    });
 
     $('#submit').click(function(){
 
         var username = $('#username').val();
+
+        webrtc = new SimpleWebRTC({
+            // the id/element dom element that will hold "our" video
+            localVideoEl: 'localVideo',
+            // the id/element dom element that will hold remote videos
+            remoteVideosEl: 'remotesVideos',
+            // immediately ask for camera access
+            autoRequestMedia: true,
+            nick:username
+        });
         webrtc.joinRoom('idle');
-        webrtc.nick=$('#username').val();
-        //webrtc.sendDirectlyToAll('text', 'newPeer', peerInfo.username);
-    });
-    $('#submit1').click(function(){
-        webrtc.sendToAll('setDisplayName',{name: $('#username').val(),nickname:'Sasuke'});
-    });
-    webrtc.on('message', function (data) {
-        if (data.type == 'setDisplayName') {
+
+
+        $('#submit1').click(function(){
+            webrtc.sendToAll('setDisplayName',{name: $('#username').val(),nickname:'Sasuke'});
+        });
+        $('getpeers').click(function(){
+            console.log(webrtc.getPeers());
+        });
+        webrtc.on('message', function (data) {
+            if (data.type == 'setDisplayName') {
 //            var name = data;
-            console.log(data.payload);
-        }
+                console.log(data.payload);
+            }
+        });
     });
 
 </script>
