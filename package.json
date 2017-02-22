@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Team-Udaan/udaan-intercom#readme",
   "dependencies": {
+    "page": "^1.7.1",
     "signal-master": "^1.0.1",
     "simplewebrtc": "^2.2.3"
   }
