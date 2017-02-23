@@ -49,7 +49,8 @@
     $('#receiving-modal').modal();
     $('#calling-modal').modal();
 
-    var allPeers = {};
+    var nickNames = {}
+    var allPeers = [];
     var peerInfo = {};
     var webrtc = null;
     var onCall = false;
@@ -65,6 +66,8 @@
         });
     }
 
+    Notification.requestPermission();
+
     $('#submit').click(function () {
 
 //        var notifWorker = new Worker('worker.js');
@@ -73,24 +76,35 @@
         peerInfo.username = username;
         webrtc = new SimpleWebRTC({
             url: 'https://' + location.hostname + ":8888",
-            autoRequestMedia: true,
-            nick: username
+            autoRequestMedia: false,
+            nick: username,
+            options: {video: false, audio: false}
         });
 
 //        notifWorker.postMessage(webrtc.connection.connection.id);
 
-        webrtc.on('readyToCall', function () {
-            webrtc.joinRoom('idle');
-            webrtc.pauseVideo();
-            webrtc.mute();
+//        webrtc.on('readyToCall', function () {
+        webrtc.joinRoom('idle');
+//            webrtc.pauseVideo();
+//            webrtc.mute();
+//        });
+
+        webrtc.on('joinedRoom', function () {
+            console.log('1');
+            webrtc.sendToAll('updateReq', 'update');
         });
 
-        webrtc.on('videoAdded', function () {
-            allPeers = webrtc.webrtc.peers;
-            var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers': allPeers});
-            $('#peers').html(peerListTemplate);
-            register();
+        webrtc.on('createdPeer', function (peer) {
 
+            setTimeout(function () {
+
+                console.log(peer);
+                allPeers = webrtc.webrtc.peers;
+                var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers': allPeers});
+                $('#peers').html(peerListTemplate);
+                register();
+
+            }, 1000);
         });
 
         webrtc.connection.on('remove', function () {
@@ -146,6 +160,7 @@
 
                 else {
                     onCall = true;
+
                     $('#receiving-modal').modal('open');
 
                     setTimeout(function () {
@@ -187,6 +202,19 @@
             if (data.type == 'canceled') {
                 $('#receiving-modal').modal('close');
                 onCall = false;
+            }
+
+            if (data.type == 'updateReq') {
+
+                setTimeout(function () {
+
+                    console.log('UPDATING');
+                    allPeers = webrtc.webrtc.peers;
+                    var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers': allPeers});
+                    $('#peers').html(peerListTemplate);
+                    register();
+
+                }, 1000);
             }
 
         });

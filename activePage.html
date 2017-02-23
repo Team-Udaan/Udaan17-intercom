@@ -21,7 +21,6 @@
     webrtc.on('readyToCall', function () {
         // you can name it anything
         var room = location.search.split('?')[1];
-        history.replaceState('test', 'In-call', window.location.origin + '/inCall');
         webrtc.joinRoom(room);
     });
 
