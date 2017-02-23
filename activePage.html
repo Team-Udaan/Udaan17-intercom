@@ -3,39 +3,29 @@
 <head>
     <script src="node_modules/simplewebrtc/latest-v2.js"></script>
     <script src="node_modules/page/page.js"></script>
-    <!--<script src="jquery-3.1.1.min.js"></script>-->
 </head>
 <body>
 <video height="300" id="localVideo"></video>
 <div id="remotesVideos"></div>
 <button id="end-call" onclick="endCall()">End call</button>
-
 <script>
-
     var webrtc = new SimpleWebRTC({
         localVideoEl: 'localVideo',
         remoteVideosEl: 'remotesVideos',
         autoRequestMedia: true
     });
-
     webrtc.on('readyToCall', function () {
-        // you can name it anything
         var room = location.search.split('?')[1];
         webrtc.joinRoom(room);
     });
-
-    function endCall() {
-//        webrtc.sendToAll('callEnded', "ended");
-        webrtc.disconnect();
-        page('/');
-    }
-
     webrtc.connection.on('remove', function () {
         webrtc.disconnect();
         page('/');
     });
-
+    function endCall() {
+        webrtc.disconnect();
+        page('/');
+    }
 </script>
-
 </body>
 </html>
