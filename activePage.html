@@ -8,37 +8,33 @@
 <body>
 <video height="300" id="localVideo"></video>
 <div id="remotesVideos"></div>
-<div id="end-call" onclick="endCall()">End call</div>
+<button id="end-call" onclick="endCall()">End call</button>
 
 <script>
+
     var webrtc = new SimpleWebRTC({
-        // the id/element dom element that will hold "our" video
         localVideoEl: 'localVideo',
-        // the id/element dom element that will hold remote videos
         remoteVideosEl: 'remotesVideos',
-        // immediately ask for camera access
         autoRequestMedia: true
     });
 
     webrtc.on('readyToCall', function () {
         // you can name it anything
         var room = location.search.split('?')[1];
+        history.replaceState('test', 'In-call', window.location.origin + '/inCall');
         webrtc.joinRoom(room);
     });
 
     function endCall() {
-
-        webrtc.sendToAll('callEnded', "emded");
+//        webrtc.sendToAll('callEnded', "ended");
         webrtc.disconnect();
         page('/');
     }
 
-    webrtc.connection.on('message', function (data) {
-        if (data.type == 'callEnded') {
-            webrtc.disconnect();
-            page('/');
-        }
-    })
+    webrtc.connection.on('remove', function () {
+        webrtc.disconnect();
+        page('/');
+    });
 
 </script>
 

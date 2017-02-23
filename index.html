@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" href="node_modules/materialize-css/dist/css/materialize.min.css">
     <script src="node_modules/simplewebrtc/latest-v2.js"></script>
     <script src="jquery-3.1.1.min.js"></script>
+    <script src="node_modules/materialize-css/dist/js/materialize.min.js"></script>
     <script src="node_modules/page/page.js"></script>
     <script src="handlebars.runtime.min.js"></script>
     <script src="calling-buttons.min.js"></script>
@@ -12,103 +14,184 @@
 
 <input type="text" id="username">
 <button id="submit">Submit</button>
-<button id="leave">Leave</button>
-<button id="page">page</button>
 <video height="300" id="localVideo"></video>
 <div id="remotesVideos"></div>
 
+
 <div id="peers"></div>
+
+
+<div id="receiving-modal" class="modal">
+    <div class="modal-content">
+        <h4>Modal Header</h4>
+        <p>A bunch of text</p>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat" id="accept">Accept</a>
+        <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat" id="reject">Reject</a>
+    </div>
+</div>
+
+
+<div id="calling-modal" class="modal">
+    <div class="modal-content">
+        <h4>Calling</h4>
+        <p>A bunch of text</p>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat" id="cancel">Cancel</a>
+    </div>
+</div>
+
 
 <script>
 
+    $('#receiving-modal').modal();
+    $('#calling-modal').modal();
 
-    var allPeers = [];
+    var allPeers = {};
     var peerInfo = {};
     var webrtc = null;
+    var onCall = false;
 
-    page('/activePage/:roomname', handlePageChange);
+    var currentPeer = null;
 
-    $('#page').click(function () {
-        page('/active?test');
-    });
+    //    var callTimer = null;
+    var callingTimeout = null;
+
+    function findPeer(id) {
+        return allPeers.find(function (obj) {
+            return obj.id == id;
+        });
+    }
+
     $('#submit').click(function () {
 
+//        var notifWorker = new Worker('worker.js');
 
         var username = $('#username').val();
         peerInfo.username = username;
         webrtc = new SimpleWebRTC({
-
             url: 'https://' + location.hostname + ":8888",
             autoRequestMedia: true,
             nick: username
         });
 
+//        notifWorker.postMessage(webrtc.connection.connection.id);
+
         webrtc.on('readyToCall', function () {
-                webrtc.joinRoom('idle');
-                webrtc.mute();
+            webrtc.joinRoom('idle');
+            webrtc.pauseVideo();
+            webrtc.mute();
         });
 
-        webrtc.on('createdPeer', function (peer) {
-            allPeers = webrtc.getPeers();
-            setTimeout(function () {
-                allPeers.map(function (peer) {
-                    return {nick: peer.nick, id: peer.id}
-                });
-                var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers': allPeers});
-                $('#peers').html(peerListTemplate);
-                register();
-            }, 1000);
+        webrtc.on('videoAdded', function () {
+            allPeers = webrtc.webrtc.peers;
+            var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers': allPeers});
+            $('#peers').html(peerListTemplate);
+            register();
+
         });
 
-        webrtc.connection.on('remove', function(obj) {
-            allPeers=webrtc.getPeers().map(function (peer) {
-                return {nick:peer.nick,id:peer.id}
-            });
-            var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers':JSON.parse(JSON.stringify(allPeers))});
+        webrtc.connection.on('remove', function () {
+            allPeers = webrtc.webrtc.peers;
+            var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers': allPeers});
             $('#peers').html(peerListTemplate);
             register();
         });
 
         $('#leave').click(function () {
-            webrtc.sendToAll('left', peerInfo);
+//            webrtc.sendToAll('left', peerInfo);
             webrtc.leaveRoom();
+        });
+
+        $('#cancel').click(function () {
+            currentPeer.send('canceled', 'canceled');
+            $('#calling-modal').modal('close');
+            onCall = false;
         });
 
         function register() {
             $('.call').click(function () {
-                console.log($(this).data('session'));
-                webrtc.sendToAll('calling',{'receiver':$(this).data('session'),'sender':webrtc.connection.connection.id})
+
+                var id = $(this).data('id');
+                console.log($(this).data('index'));
+
+                currentPeer = allPeers.find(function (obj) {
+                    return obj.id == id;
+                });
+                onCall = true;
+                currentPeer.send('calling', {
+                    'sender': webrtc.connection.connection.id
+                });
+
+                $('#calling-modal').modal('open');
+
+                setTimeout(function () {
+                    onCall = false;
+                    $('#calling-modal').modal('close');
+                }, 10000);
+
             });
         }
 
         webrtc.connection.on('message', function (data) {
             if (data.type == 'calling') {
-                if (data.payload.receiver == webrtc.connection.connection.id) {
-                    var acc = confirm('Call from ' + data.payload.sender);
-                    if (acc) {
-                        webrtc.createRoom(data.payload.sender, function () {
-                            webrtc.sendToAll('accepted', data.payload.sender);
-                            page('/activePage/' + data.payload.sender);
-                        });
-                    }
-                    console.log('calling');
+
+                if (onCall) {
+                    peer = findPeer(data.payload.sender);
+
+                    peer.send('rejected', 'busy');
+                }
+
+                else {
+                    onCall = true;
+                    $('#receiving-modal').modal('open');
+
+                    setTimeout(function () {
+                        $('#receiving-modal').modal('close');
+                        onCall = false;
+                    }, 10000);
+
+                    $('#accept').click(function () {
+
+                        peer = findPeer(data.payload.sender);
+
+                        peer.send('accepted', data.payload.sender);
+                        page('/activePage.html?' + data.payload.sender);
+                    });
+                    $('#reject').click(function () {
+                        peer = findPeer(data.payload.sender);
+                        peer.send('rejected', 'rejected');
+                        onCall = false;
+                    });
                 }
             }
             if (data.type == 'accepted') {
-                if (data.payload == webrtc.connection.connection.id) {
-                    page('/activePage/' + data.payload);
-                }
+                page('/activePage.html?' + data.payload);
+
             }
+            if (data.type == 'rejected') {
+
+                var modalHeading = $('#calling-modal .modal-content h4');
+
+                modalHeading.html('Rejected');
+                clearTimeout(callingTimeout);
+                setTimeout(function () {
+                    $('#calling-modal').modal('close');
+                    modalHeading.html('Calling');
+                }, 3000);
+                onCall = false;
+            }
+
+            if (data.type == 'canceled') {
+                $('#receiving-modal').modal('close');
+                onCall = false;
+            }
+
         });
 
     });
-
-    function handlePageChange(ctx) {
-        webrtc.leaveRoom();
-        webrtc.joinRoom(ctx.params.roomname || 'idle');
-        webrtc.unmute();
-        $('#peers').hide();
-    }
 
 
 </script>
