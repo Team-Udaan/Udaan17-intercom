@@ -8,6 +8,19 @@ var webrtc = null;
 var onCall = false;
 var currentPeer = null;
 var callingTimeout = null;
+var username = "";
+
+// navigator.serviceWorker.register('/worker.js').then(function(registration){
+//     registration.showNotification("Test", {
+//         body: "This is a test."
+//     });
+// });
+
+// var incomingCallNotification =  new Notification("Test", {
+//     body: "This is a test."
+// });
+
+
 
 function findPeer(id) {
     return allPeers.find(function (obj) {
@@ -23,8 +36,9 @@ function closeModal(id) {
     modal.style.display = "none";
 }
 
-$('#submit').click(function () {
-    var username = $('#username').val();
+
+function init() {
+
     peerInfo.username = username;
     webrtc = new SimpleWebRTC({
         url: 'https://' + location.hostname + ":8888",
@@ -76,11 +90,13 @@ $('#submit').click(function () {
             }
             else {
                 onCall = true;
+
                 openModal('receiving-modal');
-                setTimeout(function () {
-                    closeModal('receiving-modal');
-                    onCall = false;
-                }, 10000);
+                alert('Incoming call');
+                // setTimeout(function () {
+                //     closeModal('receiving-modal');
+                //     onCall = false;
+                // }, 10000);
                 $('#accept').click(function () {
                     peer = findPeer(data.payload.sender);
                     peer.send('accepted', data.payload.sender);
@@ -112,5 +128,26 @@ $('#submit').click(function () {
             closeModal('receiving-modal');
             onCall = false;
         }
-    });
+    })
+}
+
+
+$(document).ready(function () {
+
+    username = localStorage.getItem('username');
+    var encodedUsername = location.search.slice(1);
+
+    if (encodedUsername == '' && username == null) {
+        openModal('error');
+        window.close();
+    }
+
+    else if (username == null || username == '') {
+        username = atob(encodedUsername);
+        localStorage.setItem('username', username);
+        location.reload();
+    }
+    else {
+        init();
+    }
 });
