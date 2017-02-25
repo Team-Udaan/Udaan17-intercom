@@ -10,16 +10,6 @@ var currentPeer = null;
 var callingTimeout = null;
 var username = "";
 
-// navigator.serviceWorker.register('/worker.js').then(function(registration){
-//     registration.showNotification("Test", {
-//         body: "This is a test."
-//     });
-// });
-
-// var incomingCallNotification =  new Notification("Test", {
-//     body: "This is a test."
-// });
-
 
 function findPeer(id) {
     return allPeers.find(function (obj) {
@@ -46,11 +36,19 @@ function init() {
         options: {video: false, audio: false}
     });
     webrtc.joinRoom('idle');
-    webrtc.on('createdPeer', function (peer) {
-        setTimeout(function () {
+    webrtc.connection.on('message', function (msg) {
+
+        if (msg.type == 'offer' || msg.type == 'answer') {
             updatePeerList();
-        }, 1000);
+        }
+
+        // setTimeout(function () {
+        //     updatePeerList();
+        // }, 2000);
     });
+
+    // webrtc.
+
     webrtc.connection.on('remove', function () {
         updatePeerList();
     });
@@ -63,7 +61,7 @@ function init() {
     function updatePeerList() {
         allPeers = webrtc.webrtc.peers;
         var handlebarsData = allPeers.map(function (data) {
-            return {id: data.id, nick: data.nick, initial: Math.random()}
+            return {id: data.id, nick: data.nick, initial: 'A'}
         });
         var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers': handlebarsData});
         $('#peers').html(peerListTemplate);
@@ -100,10 +98,11 @@ function init() {
             }, 10000);
         });
     }
+
     webrtc.connection.on('message', function (data) {
         if (data.type == 'calling') {
             if (onCall) {
-                peer = findPeer(data.payload.sender);
+                var peer = findPeer(data.payload.sender);
                 peer.send('rejected', 'busy');
             }
             else {
