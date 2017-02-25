@@ -12,6 +12,7 @@
     var webrtc = new SimpleWebRTC({
         localVideoEl: 'localVideo',
         remoteVideosEl: 'remotesVideos',
+        url: 'https://' + location.hostname + ":8888",
         autoRequestMedia: true
     });
     webrtc.on('readyToCall', function () {

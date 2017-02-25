@@ -21,7 +21,6 @@ var username = "";
 // });
 
 
-
 function findPeer(id) {
     return allPeers.find(function (obj) {
         return obj.id == id;
@@ -63,8 +62,28 @@ function init() {
 
     function updatePeerList() {
         allPeers = webrtc.webrtc.peers;
-        var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers': allPeers});
+        var handlebarsData = allPeers.map(function (data) {
+            return {id: data.id, nick: data.nick, initial: Math.random()}
+        });
+        var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers': handlebarsData});
         $('#peers').html(peerListTemplate);
+        var colors = [
+            '#64b5f6',//blue
+            '#7986cb',//indigo
+            '#e57373',//red
+            '#ba68c8',//purple
+            '#4db6ac',//teal
+            '#dce775',//yellow
+            '#81c784',//green
+            '#ffb74d',//orange
+            '#a1887f'//brown
+        ];
+        var currentIndex = 0;
+        $('.circle').each(function () {
+            currentIndex = (currentIndex + 1) % colors.length;
+            var color = colors[currentIndex];
+            $(this).css("background-color", color);
+        });
         $('.call').click(function () {
             var id = $(this).data('id');
             currentPeer = allPeers.find(function (obj) {
@@ -81,7 +100,6 @@ function init() {
             }, 10000);
         });
     }
-
     webrtc.connection.on('message', function (data) {
         if (data.type == 'calling') {
             if (onCall) {

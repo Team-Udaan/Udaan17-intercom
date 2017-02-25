@@ -11,8 +11,11 @@
 </head>
 <body>
 
-<div id="remotesVideos"></div>
-<div id="peers"></div>
+<div class="filter"></div>
+<div id="call-list" onclick="openModal('peers')">
+    <img src="img/phone-receiver.svg" alt="">
+</div>
+<div id="peers" class="modal"></div>
 <div id="receiving-modal" class="modal">
     <div class="modal-content">
         <h4>Modal Header</h4>
@@ -32,14 +35,11 @@
         <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat" id="cancel">Cancel</a>
     </div>
 </div>
-
 <div id="error" class="modal">
     <div class="modal-content">
         <h4>Not allowed</h4>
     </div>
 </div>
-
-
 <script src="main.js"></script>
 </body>
 </html>

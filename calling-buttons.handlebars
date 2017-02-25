@@ -1,5 +1,13 @@
+<div class="close" onclick="closeModal('peers')">X</div>
 {{#each allPeers}}
-    <div class="call" data-id="{{id}}">
-        {{nick}}
+    <div class="peer">
+        <div class="circle">
+            <div class="initial">
+                {{initial}}
+            </div>
+        </div>
+        <div class="call" data-id="{{id}}">
+            {{nick}}
+        </div>
     </div>
 {{/each}}
