@@ -37,7 +37,6 @@ function init() {
     });
     webrtc.joinRoom('idle');
     webrtc.connection.on('message', function (msg) {
-
         if (msg.type == 'offer' || msg.type == 'answer') {
             updatePeerList();
         }
@@ -46,9 +45,6 @@ function init() {
         //     updatePeerList();
         // }, 2000);
     });
-
-    // webrtc.
-
     webrtc.connection.on('remove', function () {
         updatePeerList();
     });
@@ -61,7 +57,7 @@ function init() {
     function updatePeerList() {
         allPeers = webrtc.webrtc.peers;
         var handlebarsData = allPeers.map(function (data) {
-            return {id: data.id, nick: data.nick, initial: 'A'}
+            return {id: data.id, nick: data.nick, initial: 'NA'}
         });
         var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers': handlebarsData});
         $('#peers').html(peerListTemplate);
@@ -131,7 +127,7 @@ function init() {
             page('/activePage.html?' + data.payload);
         }
         if (data.type == 'rejected') {
-            var modalHeading = $('#calling-modal .modal-content h4');
+            var modalHeading = $('#calling-modal .modal-content .name');
 
             modalHeading.html('Rejected');
             clearTimeout(callingTimeout);

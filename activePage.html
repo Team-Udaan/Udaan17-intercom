@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width,user">
+    <link rel="stylesheet" href="css/style.css">
     <script src="node_modules/simplewebrtc/latest-v2.js"></script>
     <script src="node_modules/page/page.js"></script>
 </head>
@@ -19,7 +21,18 @@
         localVideoEl: 'localVideo',
         remoteVideosEl: 'remotesVideos',
         url: 'https://' + location.hostname + ":8888",
-        autoRequestMedia: true
+        autoRequestMedia: true,
+        media: {
+            video: {
+                mandatory: {
+                    "minWidth": 320,
+                    "maxWidth": 1280,
+                    "minHeight": 480,
+                    "maxHeight": 720
+                }
+            },
+            audio: true
+        }
     });
 
     webrtc.on('readyToCall', function () {
@@ -28,8 +41,8 @@
     });
 
     webrtc.connection.on('remove', function () {
-        webrtc.disconnect();
-        page('/');
+//        webrtc.disconnect();
+//        page('/');
     });
 
     webrtc.on('videoAdded', function (video, peer) {

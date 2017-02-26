@@ -10,29 +10,25 @@
     <script src="calling-buttons.min.js"></script>
 </head>
 <body>
-
-<div class="filter"></div>
 <div id="call-list" onclick="openModal('peers')">
     <img src="img/phone-receiver.svg" alt="">
 </div>
 <div id="peers" class="modal"></div>
 <div id="receiving-modal" class="modal">
     <div class="modal-content">
-        <h4>Modal Header</h4>
-        <p>A bunch of text</p>
+        <div class="name">Name</div>
     </div>
     <div class="modal-footer">
-        <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat" id="accept">Accept</a>
-        <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat" id="reject">Reject</a>
+        <a href="#!" class="button" id="accept">Accept</a>
+        <a href="#!" class="button" id="reject">Reject</a>
     </div>
 </div>
 <div id="calling-modal" class="modal">
     <div class="modal-content">
-        <h4>Calling</h4>
-        <p>A bunch of text</p>
+        <div class="name">Calling</div>
     </div>
     <div class="modal-footer">
-        <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat" id="cancel">Cancel</a>
+        <a href="#!" class="button" id="cancel">Cancel</a>
     </div>
 </div>
 <div id="error" class="modal">
