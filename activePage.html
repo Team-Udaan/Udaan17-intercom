@@ -9,9 +9,9 @@
 <body>
 <video height="300" id="localVideo"></video>
 <div id="remotes"></div>
-<button id="end-call" onclick="endCall()">End call</button>
-<button id="mute-video" onclick="toggleAudio()">Toggle Audio</button>
-<button id="mute-audio" onclick="toggleVideo()">Toggle Video</button>
+<div id="mute-audio" onclick="toggleVideo()"><img id="videoImg" src="img/photo-camera.svg" alt=""></div>
+<div id="mute-video" onclick="toggleAudio()"><img id="audioImg" src="img/speaker.svg" alt=""></div>
+<div id="end-call" onclick="endCall()"><img src="img/phone-call.svg" alt=""></div>
 <script>
 
     var video = true;
@@ -71,9 +71,11 @@
     function toggleAudio() {
         if (audio) {
             webrtc.mute();
+            document.getElementById('audioImg').src="img/mute.svg";
         }
         else {
             webrtc.unmute();
+            document.getElementById('audioImg').src="img/speaker.svg";
         }
         audio = !audio;
     }
@@ -81,9 +83,12 @@
     function toggleVideo() {
         if (video) {
             webrtc.pauseVideo();
+            document.getElementById('videoImg').src="img/no-pictures.svg";
+
         }
         else {
             webrtc.resumeVideo();
+            document.getElementById('videoImg').src="img/photo-camera.svg";
         }
         video = !video;
     }
