@@ -6,27 +6,75 @@
 </head>
 <body>
 <video height="300" id="localVideo"></video>
-<div id="remotesVideos"></div>
+<div id="remotes"></div>
 <button id="end-call" onclick="endCall()">End call</button>
+<button id="mute-video" onclick="toggleAudio()">Toggle Audio</button>
+<button id="mute-audio" onclick="toggleVideo()">Toggle Video</button>
 <script>
+
+    var video = true;
+    var audio = true;
+
     var webrtc = new SimpleWebRTC({
         localVideoEl: 'localVideo',
         remoteVideosEl: 'remotesVideos',
         url: 'https://' + location.hostname + ":8888",
         autoRequestMedia: true
     });
+
     webrtc.on('readyToCall', function () {
         var room = location.search.split('?')[1];
         webrtc.joinRoom(room);
     });
+
     webrtc.connection.on('remove', function () {
         webrtc.disconnect();
         page('/');
     });
+
+    webrtc.on('videoAdded', function (video, peer) {
+        console.log('video added', peer);
+        var remotes = document.getElementById('remotes');
+        if (remotes) {
+            var container = document.createElement('div');
+            container.className = 'videoContainer';
+            container.id = 'container_' + webrtc.getDomId(peer);
+            container.appendChild(video);
+
+            // suppress contextmenu
+            video.oncontextmenu = function () {
+                return false;
+            };
+
+            remotes.appendChild(container);
+        }
+    });
+
     function endCall() {
         webrtc.disconnect();
         page('/');
     }
+
+    function toggleAudio() {
+        if (audio) {
+            webrtc.mute();
+        }
+        else {
+            webrtc.unmute();
+        }
+        audio = !audio;
+    }
+
+    function toggleVideo() {
+        if (video) {
+            webrtc.pauseVideo();
+        }
+        else {
+            webrtc.resumeVideo();
+        }
+        video = !video;
+    }
+
 </script>
 </body>
 </html>
