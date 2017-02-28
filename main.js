@@ -1,7 +1,11 @@
 /**
  * Created by maunil on 23-02-2017.
  */
-
+//todo: add name while calling someone
+window.onload = initAudio;
+var context;
+var bufferLoader;
+var source1;
 var allPeers = [];
 var peerInfo = {};
 var webrtc = null;
@@ -9,7 +13,6 @@ var onCall = false;
 var currentPeer = null;
 var callingTimeout = null;
 var username = "";
-
 
 function findPeer(id) {
     return allPeers.find(function (obj) {
@@ -24,10 +27,33 @@ function closeModal(id) {
     var modal = document.getElementById(id);
     modal.style.display = "none";
 }
-
+function initAudio() {
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    context = new AudioContext();
+    bufferLoader = new BufferLoader(
+        context,
+        ['./ring.mp3'],
+        finishedLoading
+    );
+    bufferLoader.load();
+    return 'loaded';
+}
+function finishedLoading(bufferList) {
+    // Create two sources and play them both together.
+    console.log(bufferList);
+    source1 = context.createBufferSource();
+    source1.buffer = bufferList[0];
+    source1.connect(context.destination);
+}
+function playAudio() {
+    source1.start(0);
+}
+function stopAudio() {
+    source1.stop(0);
+    initAudio();
+}
 
 function init() {
-
     peerInfo.username = username;
     webrtc = new SimpleWebRTC({
         url: 'https://' + location.hostname + ":8888",
@@ -40,10 +66,6 @@ function init() {
         if (msg.type == 'offer' || msg.type == 'answer') {
             updatePeerList();
         }
-
-        // setTimeout(function () {
-        //     updatePeerList();
-        // }, 2000);
     });
     webrtc.connection.on('remove', function () {
         updatePeerList();
@@ -57,7 +79,7 @@ function init() {
     function updatePeerList() {
         allPeers = webrtc.webrtc.peers;
         var handlebarsData = allPeers.map(function (data) {
-            return {id: data.id, nick: data.nick, initial: 'NA'}
+            return {id: data.id, nick: data.nick, initial: 'NA'/*data.nick.charAt(0)*/}
         });
         var peerListTemplate = Handlebars.templates['calling-buttons']({'allPeers': handlebarsData});
         $('#peers').html(peerListTemplate);
@@ -103,13 +125,13 @@ function init() {
             }
             else {
                 onCall = true;
-
                 openModal('receiving-modal');
-                alert('Incoming call');
-                // setTimeout(function () {
-                //     closeModal('receiving-modal');
-                //     onCall = false;
-                // }, 10000);
+                playAudio();
+                setTimeout(function () {
+                    closeModal('receiving-modal');
+                    stopAudio();
+                    onCall = false;
+                }, 10000);
                 $('#accept').click(function () {
                     peer = findPeer(data.payload.sender);
                     peer.send('accepted', data.payload.sender);
@@ -117,6 +139,7 @@ function init() {
                 });
                 $('#reject').click(function () {
                     closeModal('receiving-modal');
+                    stopAudio();
                     peer = findPeer(data.payload.sender);
                     peer.send('rejected', 'rejected');
                     onCall = false;
@@ -139,6 +162,7 @@ function init() {
         }
         if (data.type == 'canceled') {
             closeModal('receiving-modal');
+            stopAudio();
             onCall = false;
         }
     })

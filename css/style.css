@@ -1,14 +1,14 @@
-@font-face {
-    font-family: "roboto";
-    src: url('../Roboto/Roboto-Regular.ttf');
-}
-
 body {
-    font-family: "roboto";
     height: 100%;
     margin: 0;
-    background-image: url("../img/cityline.jpg");
-    background-repeat: no-repeat;
+    background: linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
+    linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0,
+    linear-gradient(27deg, #222 5px, transparent 5px) 0 10px,
+    linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
+    linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
+    linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+    background-color: #131313;
+    background-size: 20px 20px;
 }
 
 .peer {
@@ -112,35 +112,40 @@ body {
     display: inline-block;
     font-size: 16px;
 }
-.modal-footer{
+
+.modal-footer {
     position: absolute;
     bottom: 35px;
     text-align: center;
     width: 100%;
 }
-.name{
+
+.name {
     height: 70px;
     width: 100%;
-    background-color: rgba(255,255,255,0.5);
+    background-color: rgba(255, 255, 255, 0.5);
     text-align: center;
     font-size: 30px;
     padding-top: 20px;
 }
+
 #accept {
     background-color: #4CAF50;
 }
 
-#reject ,#cancel{
+#reject, #cancel {
     background-color: #f44336;
 }
+
 /*begin: avtivepage*/
-#remotes video{
+#remotes video {
     z-index: -1;
     position: absolute;
     width: 100vw;
     height: 100vh;
 }
-#localVideo{
+
+#localVideo {
     position: absolute;
     bottom: 0;
     right: 0;

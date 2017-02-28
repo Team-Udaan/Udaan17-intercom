@@ -41,8 +41,8 @@
     });
 
     webrtc.connection.on('remove', function () {
-//        webrtc.disconnect();
-//        page('/');
+        webrtc.disconnect();
+        page('/');
     });
 
     webrtc.on('videoAdded', function (video, peer) {
