@@ -74,6 +74,7 @@ function init() {
         currentPeer.send('canceled', 'canceled');
         closeModal('calling-modal');
         onCall = false;
+        clearTimeout(callingTimeout);
     });
 
     function updatePeerList() {
@@ -125,47 +126,51 @@ function init() {
             }
             else {
                 onCall = true;
+                var peerNick = findPeer(data.payload.sender).nick;
+                $('#receiving-modal .name').html(peerNick);
                 openModal('receiving-modal');
-                playAudio();
                 setTimeout(function () {
                     closeModal('receiving-modal');
-                    stopAudio();
                     onCall = false;
+                    stopAudio();
                 }, 10000);
                 $('#accept').click(function () {
+                    onCall = true;
                     peer = findPeer(data.payload.sender);
                     peer.send('accepted', data.payload.sender);
                     page('/activePage.html?' + data.payload.sender);
                 });
                 $('#reject').click(function () {
+                    onCall = false;
                     closeModal('receiving-modal');
-                    stopAudio();
                     peer = findPeer(data.payload.sender);
                     peer.send('rejected', 'rejected');
-                    onCall = false;
+                    stopAudio();
                 });
+                playAudio();
             }
         }
         if (data.type == 'accepted') {
+            onCall = true;
             page('/activePage.html?' + data.payload);
         }
         if (data.type == 'rejected') {
+            onCall = false;
             var modalHeading = $('#calling-modal .modal-content .name');
-
             modalHeading.html('Rejected');
             clearTimeout(callingTimeout);
             setTimeout(function () {
+                onCall = false;
                 closeModal('calling-modal');
                 modalHeading.html('Calling');
             }, 3000);
-            onCall = false;
         }
         if (data.type == 'canceled') {
+            onCall = false;
             closeModal('receiving-modal');
             stopAudio();
-            onCall = false;
         }
-    })
+    });
 }
 
 
