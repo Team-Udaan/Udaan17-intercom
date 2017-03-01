@@ -35,14 +35,16 @@
         }
     });
 
+
     webrtc.on('readyToCall', function () {
         var room = location.search.split('?')[1];
+        history.replaceState({}, "", "/");
         webrtc.joinRoom(room);
     });
 
     webrtc.connection.on('remove', function () {
         webrtc.disconnect();
-        page('/');
+        location.reload();
     });
 
     webrtc.on('videoAdded', function (video, peer) {

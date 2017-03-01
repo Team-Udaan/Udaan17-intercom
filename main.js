@@ -12,6 +12,7 @@ var webrtc = null;
 var onCall = false;
 var currentPeer = null;
 var callingTimeout = null;
+var receivingTimeout = null;
 var username = "";
 
 function findPeer(id) {
@@ -75,6 +76,8 @@ function init() {
         closeModal('calling-modal');
         onCall = false;
         clearTimeout(callingTimeout);
+        clearTimeout(receivingTimeout);
+        $('#calling-modal .modal-content .name').html('Calling');
     });
 
     function updatePeerList() {
@@ -111,7 +114,7 @@ function init() {
                 'sender': webrtc.connection.connection.id
             });
             openModal('calling-modal');
-            setTimeout(function () {
+            callingTimeout = setTimeout(function () {
                 onCall = false;
                 closeModal('calling-modal');
             }, 10000);
@@ -129,7 +132,8 @@ function init() {
                 var peerNick = findPeer(data.payload.sender).nick;
                 $('#receiving-modal .name').html(peerNick);
                 openModal('receiving-modal');
-                setTimeout(function () {
+                // clearTimeout(receivingTimeout);
+                receivingTimeout = setTimeout(function () {
                     closeModal('receiving-modal');
                     onCall = false;
                     stopAudio();
@@ -142,6 +146,8 @@ function init() {
                 });
                 $('#reject').click(function () {
                     onCall = false;
+                    clearTimeout(callingTimeout);
+                    clearTimeout(receivingTimeout);
                     closeModal('receiving-modal');
                     peer = findPeer(data.payload.sender);
                     peer.send('rejected', 'rejected');
@@ -159,13 +165,17 @@ function init() {
             var modalHeading = $('#calling-modal .modal-content .name');
             modalHeading.html('Rejected');
             clearTimeout(callingTimeout);
-            setTimeout(function () {
+            clearTimeout(receivingTimeout);
+            receivingTimeout = setTimeout(function () {
                 onCall = false;
+                clearTimeout(callingTimeout);
                 closeModal('calling-modal');
                 modalHeading.html('Calling');
             }, 3000);
         }
         if (data.type == 'canceled') {
+            clearTimeout(callingTimeout);
+            clearTimeout(receivingTimeout);
             onCall = false;
             closeModal('receiving-modal');
             stopAudio();
